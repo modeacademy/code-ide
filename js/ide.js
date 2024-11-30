@@ -177,7 +177,7 @@ function run() {
     var x = layout.root.getItemsById("stdout")[0];
     x.parent.header.parent.setActiveContentItem(x);
 
-    var sourceValue = encode(sourceEditor.getValue());
+    var sourceValue = sourceEditor.getValue();
     var stdinValue = encode(stdinEditor.getValue());
     var languageId = resolveLanguageId($selectLanguage.val());
     var compilerOptions = $compilerOptions.val();
@@ -202,7 +202,6 @@ function run() {
     var sendRequest = function(data) {
         timeStart = performance.now();
         $.ajax({
-            url: apiUrl + `/run/text-mode?language=c`,
             type: "POST",
             async: true,
             contentType: "application/json",
