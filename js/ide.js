@@ -4,13 +4,8 @@ const AUTH_HEADERS = API_KEY ? {
     "X-RapidAPI-Key": API_KEY
 } : {};
 
-var defaultUrl = localStorageGetItem("api-url") || "https://judge0-ce.p.rapidapi.com";
-var extraApiUrl = "https://judge0-extra-ce.p.rapidapi.com";
-
-if (location.hostname == "ide.judge0.com") {
-    defaultUrl = "https://ce.judge0.com";
-    extraApiUrl = "https://extra-ce.judge0.com";
-}
+var defaultUrl = "http://localhost:10010";
+var extraApiUrl = "http://localhost:10010";
 
 var apiUrl = defaultUrl;
 var wait = ((localStorageGetItem("wait") || "false") === "true");
@@ -126,6 +121,8 @@ function handleError(jqXHR, textStatus, errorThrown) {
 }
 
 function handleRunError(jqXHR, textStatus, errorThrown) {
+    console.log(jqXHR);
+
     handleError(jqXHR, textStatus, errorThrown);
     $runBtn.removeClass("loading");
 }
@@ -199,52 +196,26 @@ function run() {
         redirect_stderr_to_stdout: true
     };
 
+    console.log(data);
+    console.log(apiUrl);
+
     var sendRequest = function(data) {
         timeStart = performance.now();
         $.ajax({
-            url: apiUrl + `/submissions?base64_encoded=true&wait=${wait}`,
+            url: apiUrl + `/run/text-mode?language=c`,
             type: "POST",
             async: true,
             contentType: "application/json",
             data: JSON.stringify(data),
-            headers: AUTH_HEADERS,
-            success: function (data, textStatus, jqXHR) {
-                console.log(`Your submission token is: ${data.token}`);
-                if (wait) {
-                    handleResult(data);
-                } else {
-                    setTimeout(fetchSubmission.bind(null, data.token, 1), INITIAL_WAIT_TIME_MS);
-                }
+
+            success: function (data) {
+                console.log(data);
             },
             error: handleRunError
         });
     }
 
-    var fetchAdditionalFiles = false;
-    if (parseInt(languageId) === 82) {
-        if (sqliteAdditionalFiles === "") {
-            fetchAdditionalFiles = true;
-            $.ajax({
-                url: `./data/additional_files_zip_base64.txt`,
-                type: "GET",
-                async: true,
-                contentType: "text/plain",
-                success: function (responseData, textStatus, jqXHR) {
-                    sqliteAdditionalFiles = responseData;
-                    data["additional_files"] = sqliteAdditionalFiles;
-                    sendRequest(data);
-                },
-                error: handleRunError
-            });
-        }
-        else {
-            data["additional_files"] = sqliteAdditionalFiles;
-        }
-    }
-
-    if (!fetchAdditionalFiles) {
-        sendRequest(data);
-    }
+    sendRequest(data);
 }
 
 function fetchSubmission(submission_token, iteration) {
