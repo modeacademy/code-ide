@@ -202,6 +202,7 @@ function run() {
     var sendRequest = function(data) {
         timeStart = performance.now();
         $.ajax({
+            url: apiUrl + `/run/text-mode?language=c`,
             type: "POST",
             async: true,
             contentType: "application/json",
