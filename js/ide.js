@@ -32,6 +32,8 @@ var $commandLineArguments;
 var $insertTemplateBtn;
 var $runBtn;
 var $debugBtn;
+var $fixedEnterBtn;
+var $interactiveModeCheckBox;
 var $statusLine;
 
 var timeStart;
@@ -214,7 +216,7 @@ function run() {
         .reduce((acc, [key, value]) => `${acc}${key}=${value}&`, '')
         .slice(0, -1);
 
-    var apiPath = $('#interactive-mode').is(':checked')
+    var apiPath = $interactiveModeCheckBox.is(':checked')
         ? '/run/interactive-mode'
         : '/run/text-mode';
 
@@ -438,6 +440,17 @@ $(document).ready(function () {
     $debugBtn = $("#debug-btn");
     $debugBtn.click(function (e) {
         _debug();
+    });
+
+    $fixedEnterBtn = $('#fixed-enter-btn');
+    $interactiveModeCheckBox = $('#interactive-mode');
+
+    $interactiveModeCheckBox.on('change', function () {
+        if ($(this).is(':checked')) {
+            $fixedEnterBtn.show(); // 체크되면 버튼 표시
+        } else {
+            $fixedEnterBtn.hide(); // 체크 해제되면 버튼 숨김
+        }
     });
 
     $statusLine = $("#status-line");
