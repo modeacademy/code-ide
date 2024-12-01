@@ -196,6 +196,11 @@ function run() {
 
     var optionDetails = _getOptionDetailsByValue($selectLanguage.val());
 
+    // 컴파일러 옵션
+    if (data.compiler_options && data.compiler_options.trim() !== "") {
+        optionDetails.compiler_options = data.compiler_options;
+    }
+
     // optionDetails 값을 통해서 쿼리 파라미터 생성
     var queryParam = Object.entries(optionDetails)
         .reduce((acc, [key, value]) => `${acc}${key}=${value}&`, '')
