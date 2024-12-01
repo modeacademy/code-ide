@@ -331,6 +331,8 @@ function _pollProgramStatus(pid) {
         contentType: "application/json",
 
         success: function (data) {
+            console.log(data);
+
             stdoutEditor.setValue(data.output);
 
             setTimeout(() => {
