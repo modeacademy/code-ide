@@ -31,6 +31,7 @@ var $compilerOptions;
 var $commandLineArguments;
 var $insertTemplateBtn;
 var $runBtn;
+var $debugBtn;
 var $statusLine;
 
 var timeStart;
@@ -123,6 +124,7 @@ function handleError(jqXHR, textStatus, errorThrown) {
 function handleRunError(jqXHR, textStatus, errorThrown) {
     handleError(jqXHR, textStatus, errorThrown);
     $runBtn.removeClass("loading");
+    $debugBtn.removeClass("loading");
 }
 
 function handleResult(data) {
@@ -158,6 +160,7 @@ function handleResult(data) {
     }
 
     $runBtn.removeClass("loading");
+    $debugBtn.removeClass("loading");
 }
 
 function run() {
@@ -210,11 +213,81 @@ function run() {
     var queryParam = Object.entries(optionDetails)
         .reduce((acc, [key, value]) => `${acc}${key}=${value}&`, '')
         .slice(0, -1);
-    
+
     var sendRequest = function (data) {
         timeStart = performance.now();
         $.ajax({
             url: apiUrl + `/run/text-mode?` + queryParam,
+            type: "POST",
+            async: true,
+            contentType: "application/json",
+            data: JSON.stringify(data),
+
+            success: function (data) {
+                console.log(data);
+            },
+            error: handleRunError
+        });
+    }
+
+    sendRequest(data);
+}
+
+function _debug() {
+    if (sourceEditor.getValue().trim() === "") {
+        showError("Error", "Source code can't be empty!");
+        return;
+    } else {
+        $debugBtn.addClass("loading");
+    }
+
+    document.getElementById("stdout-dot").hidden = true;
+
+    stdoutEditor.setValue("");
+
+    var x = layout.root.getItemsById("stdout")[0];
+    x.parent.header.parent.setActiveContentItem(x);
+
+    var sourceValue = sourceEditor.getValue();
+    var stdinValue = stdinEditor.getValue();
+    var languageId = resolveLanguageId($selectLanguage.val());
+    var compilerOptions = $compilerOptions.val();
+    var commandLineArguments = $commandLineArguments.val();
+
+    if (parseInt(languageId) === 44) {
+        sourceValue = sourceEditor.getValue();
+    }
+
+    var data = {
+        source_code: sourceValue,
+        language_id: languageId,
+        stdin: stdinValue,
+        compiler_options: compilerOptions,
+        command_line_arguments: commandLineArguments,
+        redirect_stderr_to_stdout: true
+    };
+
+    var optionDetails = _getOptionDetailsByValue($selectLanguage.val());
+
+    // 컴파일러 옵션
+    if (data.compiler_options && data.compiler_options.trim() !== "") {
+        optionDetails.compiler_options = data.compiler_options;
+    }
+
+    // 커멘드 라인 Arguments
+    if (data.command_line_arguments && data.command_line_arguments.trim() !== "") {
+        optionDetails.command_line_arguments = data.command_line_arguments;
+    }
+
+    // optionDetails 값을 통해서 쿼리 파라미터 생성
+    var queryParam = Object.entries(optionDetails)
+        .reduce((acc, [key, value]) => `${acc}${key}=${value}&`, '')
+        .slice(0, -1);
+
+    var sendRequest = function (data) {
+        timeStart = performance.now();
+        $.ajax({
+            url: apiUrl + `/run/debugger?` + queryParam,
             type: "POST",
             async: true,
             contentType: "application/json",
@@ -356,6 +429,11 @@ $(document).ready(function () {
     $runBtn = $("#run-btn");
     $runBtn.click(function (e) {
         run();
+    });
+
+    $debugBtn = $("#debug-btn");
+    $debugBtn.click(function (e) {
+        _debug();
     });
 
     $statusLine = $("#status-line");
