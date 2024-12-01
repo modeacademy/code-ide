@@ -214,10 +214,14 @@ function run() {
         .reduce((acc, [key, value]) => `${acc}${key}=${value}&`, '')
         .slice(0, -1);
 
+    var apiPath = $('#interactive-mode').is(':checked')
+        ? '/run/interactive-mode'
+        : '/run/text-mode';
+
     var sendRequest = function (data) {
         timeStart = performance.now();
         $.ajax({
-            url: apiUrl + `/run/text-mode?` + queryParam,
+            url: apiUrl + apiPath + `?` + queryParam,
             type: "POST",
             async: true,
             contentType: "application/json",
