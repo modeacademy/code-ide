@@ -4,6 +4,7 @@ const AUTH_HEADERS = API_KEY ? {
     "X-RapidAPI-Key": API_KEY
 } : {};
 
+var globalPid = null;
 var defaultUrl = "http://localhost:10010";
 var extraApiUrl = "http://localhost:10010";
 
@@ -125,8 +126,11 @@ function handleError(jqXHR, textStatus, errorThrown) {
 
 function handleRunError(jqXHR, textStatus, errorThrown) {
     handleError(jqXHR, textStatus, errorThrown);
+
     $runBtn.removeClass("loading");
     $debugBtn.removeClass("loading");
+
+    globalPid = null;
 }
 
 function handleResult(data) {
@@ -232,6 +236,7 @@ function run() {
             success: function (data) {
                 console.log(data);
 
+                globalPid = data.pid;
                 _pollProgramStatus(data.pid);
             },
             error: handleRunError
@@ -304,6 +309,7 @@ function _debug() {
             success: function (data) {
                 console.log(data);
 
+                globalPid = data.pid;
                 _pollProgramStatus(data.pid);
             },
             error: handleRunError
