@@ -125,6 +125,8 @@ function handleError(jqXHR, textStatus, errorThrown) {
 }
 
 function handleRunError(jqXHR, textStatus, errorThrown) {
+    console.log(jqXHR, textStatus, errorThrown);
+
     handleError(jqXHR, textStatus, errorThrown);
 
     $runBtn.removeClass("loading");
