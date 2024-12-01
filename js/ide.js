@@ -231,6 +231,8 @@ function run() {
 
             success: function (data) {
                 console.log(data);
+
+                _pollProgramStatus(data.pid);
             },
             error: handleRunError
         });
@@ -301,12 +303,33 @@ function _debug() {
 
             success: function (data) {
                 console.log(data);
+
+                _pollProgramStatus(data.pid);
             },
             error: handleRunError
         });
     }
 
     sendRequest(data);
+}
+
+function _pollProgramStatus(pid) {
+    const apiPath = `/program?pid=${pid}`;
+
+    $.ajax({
+        url: apiUrl + apiPath,
+        type: "GET", // GET 요청으로 설정 (데이터를 조회할 때 GET 사용)
+        async: true,
+        contentType: "application/json",
+
+        success: function () {
+            setTimeout(() => {
+                _pollProgramStatus(pid); // 재귀 호출 (0.4초 딜레이 후)
+            }, 400);
+        },
+
+        error: handleRunError
+    });
 }
 
 /**
