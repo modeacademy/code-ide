@@ -322,7 +322,9 @@ function _pollProgramStatus(pid) {
         async: true,
         contentType: "application/json",
 
-        success: function () {
+        success: function (data) {
+            console.log(data);
+
             setTimeout(() => {
                 _pollProgramStatus(pid); // 재귀 호출 (0.4초 딜레이 후)
             }, 400);
