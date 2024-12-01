@@ -218,6 +218,26 @@ function run() {
     sendRequest(data);
 }
 
+/**
+ * 특정 value에 해당하는 옵션의 language와 compiler_type 정보를 반환하는 함수
+ *
+ * @param value
+ * @returns {{language: *, compiler: *}|null}
+ * @private
+ */
+function _getOptionDetailsByValue(value) {
+    const $option = $(`#select-language option[value='${value}']`);
+
+    if ($option.length > 0) {
+        return {
+            language: $option.data('language'),
+            compiler_type: $option.data('compiler')
+        };
+    }
+
+    return null; // 해당 value에 대한 옵션이 없을 경우
+}
+
 function fetchSubmission(submission_token, iteration) {
     if (iteration >= MAX_PROBE_REQUESTS) {
         handleRunError({
