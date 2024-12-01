@@ -201,6 +201,11 @@ function run() {
         optionDetails.compiler_options = data.compiler_options;
     }
 
+    // 커멘드 라인 Arguments
+    if (data.command_line_arguments && data.command_line_arguments.trim() !== "") {
+        optionDetails.command_line_arguments = data.command_line_arguments;
+    }
+
     // optionDetails 값을 통해서 쿼리 파라미터 생성
     var queryParam = Object.entries(optionDetails)
         .reduce((acc, [key, value]) => `${acc}${key}=${value}&`, '')
