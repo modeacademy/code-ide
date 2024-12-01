@@ -203,12 +203,12 @@ function run() {
 
     // 컴파일러 옵션
     if (data.compiler_options && data.compiler_options.trim() !== "") {
-        optionDetails.compiler_options = data.compiler_options;
+        optionDetails.compile_option = data.compiler_options;
     }
 
     // 커멘드 라인 Arguments
     if (data.command_line_arguments && data.command_line_arguments.trim() !== "") {
-        optionDetails.command_line_arguments = data.command_line_arguments;
+        optionDetails.argument = data.command_line_arguments;
     }
 
     // optionDetails 값을 통해서 쿼리 파라미터 생성
@@ -279,12 +279,12 @@ function _debug() {
 
     // 컴파일러 옵션
     if (data.compiler_options && data.compiler_options.trim() !== "") {
-        optionDetails.compiler_options = data.compiler_options;
+        optionDetails.compile_option = data.compiler_options;
     }
 
     // 커멘드 라인 Arguments
     if (data.command_line_arguments && data.command_line_arguments.trim() !== "") {
-        optionDetails.command_line_arguments = data.command_line_arguments;
+        optionDetails.argument = data.command_line_arguments;
     }
 
     // optionDetails 값을 통해서 쿼리 파라미터 생성
