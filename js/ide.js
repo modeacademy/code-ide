@@ -342,6 +342,34 @@ function _pollProgramStatus(pid) {
     });
 }
 
+function _stopProcess(pid) {
+    pid = pid || globalPid;
+
+    if (!pid) {
+        console.error("Error: PID is null or empty. Cannot proceed with /stop request.");
+        return;
+    }
+
+    const apiPath = `/stop?pid=${pid}`;
+
+    // AJAX 요청 실행
+    $.ajax({
+        url: apiUrl + apiPath,
+        type: "POST",
+        async: true,
+        contentType: "application/json",
+        success: function (data) {
+            console.log(data);
+            console.log("Stop request successful for PID:", pid);
+
+            $runBtn.removeClass("loading");
+            $debugBtn.removeClass("loading");
+        },
+
+        error: handleRunError
+    });
+}
+
 /**
  * 특정 value에 해당하는 옵션의 language와 compiler_type 정보를 반환하는 함수
  *
