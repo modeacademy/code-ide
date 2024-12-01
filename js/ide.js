@@ -495,11 +495,21 @@ $(document).ready(function () {
 
     $runBtn = $("#run-btn");
     $runBtn.click(function (e) {
+        if ($(this).hasClass("loading")) {
+            _stopProcess(null);
+            return;
+        }
+
         run();
     });
 
     $debugBtn = $("#debug-btn");
     $debugBtn.click(function (e) {
+        if ($(this).hasClass("loading")) {
+            _stopProcess(null);
+            return;
+        }
+
         _debug();
     });
 
