@@ -370,6 +370,41 @@ function _stopProcess(pid) {
     });
 }
 
+function _sendInputToProcess(pid) {
+    pid = pid || globalPid;
+
+    if (!pid) {
+        console.error("Error: PID is null. Cannot proceed with /input request.");
+        return;
+    }
+
+    // stdin 값 가져오기
+    const stdinValue = stdinEditor.getValue();
+    const apiPath = `/input?pid=${pid}`;
+
+    console.log({
+        "stdin": stdinValue
+    });
+    stdinEditor.setValue("");
+
+    // AJAX 요청 실행
+    $.ajax({
+        url: apiUrl + apiPath,
+        type: "POST",
+        async: true,
+        contentType: "application/json",
+        data: JSON.stringify({
+            "stdin": stdinValue
+        }),
+        success: function (data) {
+            console.log(data);
+            console.log("Input successfully sent for PID:", pid);
+        },
+
+        error: handleRunError
+    });
+}
+
 /**
  * 특정 value에 해당하는 옵션의 language와 compiler_type 정보를 반환하는 함수
  *
