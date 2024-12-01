@@ -196,13 +196,16 @@ function run() {
         redirect_stderr_to_stdout: true
     };
 
-    console.log(data);
-    console.log(apiUrl);
+    var optionDetails = _getOptionDetailsByValue($selectLanguage.val());
 
-    var sendRequest = function(data) {
+    // optionDetails 값을 통해서 쿼리 파라미터 생성
+    var queryParam = Object.entries(optionDetails)
+        .reduce((acc, [key, value]) => `${acc}${key}=${value}&`, '')
+        .slice(0, -1);
+    
         timeStart = performance.now();
         $.ajax({
-            url: apiUrl + `/run/text-mode?language=c`,
+            url: apiUrl + `/run/text-mode?` + queryParam,
             type: "POST",
             async: true,
             contentType: "application/json",
