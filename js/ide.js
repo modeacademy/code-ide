@@ -331,7 +331,7 @@ function _pollProgramStatus(pid) {
         contentType: "application/json",
 
         success: function (data) {
-            console.log(data);
+            stdoutEditor.setValue(data.output);
 
             setTimeout(() => {
                 _pollProgramStatus(pid); // 재귀 호출 (0.4초 딜레이 후)
