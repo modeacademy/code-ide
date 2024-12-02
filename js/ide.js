@@ -331,14 +331,20 @@ function _pollProgramStatus(pid) {
         async: true,
         contentType: "application/json",
 
-        success: function (data) {
-            console.log(data);
+        success: function (data, textStatus, xhr) {
+            if (xhr.status === 200) {
+                if (data.output) {
+                    stdoutEditor.setValue(data.output);
+                }
 
-            stdoutEditor.setValue(data.output);
+                setTimeout(() => {
+                    _pollProgramStatus(pid); // 재귀 호출 (0.4초 딜레이 후)
+                }, 400);
 
-            setTimeout(() => {
-                _pollProgramStatus(pid); // 재귀 호출 (0.4초 딜레이 후)
-            }, 400);
+                return;
+            }
+
+            _stopProcess(pid);
         },
 
         error: handleRunError
