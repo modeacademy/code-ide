@@ -354,7 +354,7 @@ function _pollProgramStatus(pid) {
         success: function (data, textStatus, xhr) {
             if (xhr.status === 200) {
                 if (data.output) {
-                    stdoutEditor.setValue(data.output);
+                    stdoutEditor.setValue(stdoutEditor.getValue() + data.output);
                 }
 
                 setTimeout(() => {
