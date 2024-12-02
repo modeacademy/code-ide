@@ -606,7 +606,7 @@ $(document).ready(function () {
 
     $fixedEnterBtn.click(function (e) {
         if ($debugBtn.hasClass("loading") || $runBtn.hasClass("loading")) {
-            _sendInputToProcess(10);
+            _sendInputToProcess(null);
         }
     });
 
