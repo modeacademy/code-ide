@@ -364,13 +364,14 @@ function _stopProcess(pid) {
         success: function (data) {
             console.log(data);
             console.log("Stop request successful for PID:", pid);
-
-            $runBtn.removeClass("loading");
-            $debugBtn.removeClass("loading");
         },
 
         error: handleRunError
     });
+
+    globalPid = null;
+    $runBtn.removeClass("loading");
+    $debugBtn.removeClass("loading");
 }
 
 function _sendInputToProcess(pid) {
