@@ -361,10 +361,11 @@ function _pollProgramStatus(pid) {
 
                 return;
             }
-
-            _stopProcess(pid);
+            _fillGlobalProcess(null, null);
+            $runBtn.removeClass("loading");
+            $debugBtn.removeClass("loading");
         },
-
+        
         error: handleRunError
     });
 }
