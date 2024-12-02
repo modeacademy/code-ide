@@ -581,14 +581,6 @@ $(document).ready(function () {
     $fixedEnterBtn = $('#fixed-enter-btn');
     $interactiveModeCheckBox = $('#interactive-mode');
 
-    $interactiveModeCheckBox.on('change', function () {
-        if ($(this).is(':checked')) {
-            $fixedEnterBtn.show(); // 체크되면 버튼 표시
-        } else {
-            $fixedEnterBtn.hide(); // 체크 해제되면 버튼 숨김
-        }
-    });
-
     $fixedEnterBtn.click(function (e) {
         if ($debugBtn.hasClass("loading") || $runBtn.hasClass("loading")) {
             _sendInputToProcess(10);
