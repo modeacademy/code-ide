@@ -334,7 +334,9 @@ function _pollProgramStatus(pid) {
         pid = pid || _globalProcess.pid;
 
         if (!pid) {
+            debugger;
             console.error("Error: PID is null. Cannot proceed with /input request.");
+
             return;
         }
     }
@@ -372,7 +374,9 @@ function _stopProcess(pid) {
         pid = pid || _globalProcess.pid;
 
         if (!pid) {
+            debugger;
             console.error("Error: PID is null. Cannot proceed with /input request.");
+
             return;
         }
     }
@@ -403,7 +407,9 @@ function _sendInputToProcess(pid) {
         pid = pid || _globalProcess.pid;
 
         if (!pid) {
+            debugger;
             console.error("Error: PID is null. Cannot proceed with /input request.");
+
             return;
         }
     }
@@ -438,6 +444,8 @@ function _sendInputToProcess(pid) {
 function _fillGlobalProcess(pid, apiPath = null) {
     _globalProcess.pid = pid;
     _globalProcess.apiPath =apiPath;
+
+    debugger;
 
     if (_globalProcess.pid === null) {
         $fixedEnterBtn.prop("disabled", true);
