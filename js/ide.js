@@ -326,11 +326,13 @@ function _debug() {
 }
 
 function _pollProgramStatus(pid) {
-    pid = pid || globalPid;
+    if (pid === null || pid === undefined) {
+        pid = pid || globalPid;
 
-    if (!pid) {
-        console.error("Error: PID is null. Cannot proceed with /input request.");
-        return;
+        if (!pid) {
+            console.error("Error: PID is null. Cannot proceed with /input request.");
+            return;
+        }
     }
 
     const apiPath = `/program?pid=${pid}`;
@@ -362,11 +364,13 @@ function _pollProgramStatus(pid) {
 }
 
 function _stopProcess(pid) {
-    pid = pid || globalPid;
+    if (pid === null || pid === undefined) {
+        pid = pid || globalPid;
 
-    if (!pid) {
-        console.error("Error: PID is null or empty. Cannot proceed with /stop request.");
-        return;
+        if (!pid) {
+            console.error("Error: PID is null. Cannot proceed with /input request.");
+            return;
+        }
     }
 
     const apiPath = `/stop?pid=${pid}`;
@@ -391,11 +395,13 @@ function _stopProcess(pid) {
 }
 
 function _sendInputToProcess(pid) {
-    pid = pid || globalPid;
+    if (pid === null || pid === undefined) {
+        pid = pid || globalPid;
 
-    if (!pid) {
-        console.error("Error: PID is null. Cannot proceed with /input request.");
-        return;
+        if (!pid) {
+            console.error("Error: PID is null. Cannot proceed with /input request.");
+            return;
+        }
     }
 
     // stdin 값 가져오기
