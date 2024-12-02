@@ -333,7 +333,7 @@ function _pollProgramStatus(pid) {
     if (pid === null || pid === undefined) {
         pid = pid || _globalProcess.pid;
 
-        if (!pid) {
+        if (pid === null || pid === undefined) {
             debugger;
             console.error("Error: PID is null. Cannot proceed with /input request.");
 
@@ -373,7 +373,7 @@ function _stopProcess(pid) {
     if (pid === null || pid === undefined) {
         pid = pid || _globalProcess.pid;
 
-        if (!pid) {
+        if (pid === null || pid === undefined) {
             debugger;
             console.error("Error: PID is null. Cannot proceed with /input request.");
 
@@ -406,7 +406,7 @@ function _sendInputToProcess(pid) {
     if (pid === null || pid === undefined) {
         pid = pid || _globalProcess.pid;
 
-        if (!pid) {
+        if (pid === null || pid === undefined) {
             debugger;
             console.error("Error: PID is null. Cannot proceed with /input request.");
 
