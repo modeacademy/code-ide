@@ -136,7 +136,7 @@ function handleRunError(jqXHR, textStatus, errorThrown) {
         _stopProcess(globalPid);
     }
 
-    globalPid = null;
+    _setGlobalPid(null);
 }
 
 function handleResult(data) {
@@ -241,6 +241,8 @@ function run() {
 
             success: function (data) {
                 console.log(data);
+
+                _setGlobalPid(data.pid);
                 _pollProgramStatus(data.pid);
             },
             error: handleRunError
@@ -312,6 +314,8 @@ function _debug() {
 
             success: function (data) {
                 console.log(data);
+
+                _setGlobalPid(data.pid);
                 _pollProgramStatus(data.pid);
             },
             error: handleRunError
@@ -381,7 +385,7 @@ function _stopProcess(pid) {
         error: handleRunError
     });
 
-    globalPid = null;
+    _setGlobalPid(null);
     $runBtn.removeClass("loading");
     $debugBtn.removeClass("loading");
 }
@@ -419,6 +423,10 @@ function _sendInputToProcess(pid) {
 
         error: handleRunError
     });
+}
+
+function _setGlobalPid(pid) {
+    globalPid = pid;
 }
 
 /**
