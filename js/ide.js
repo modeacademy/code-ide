@@ -322,8 +322,14 @@ function _debug() {
 }
 
 function _pollProgramStatus(pid) {
+    pid = pid || globalPid;
+
+    if (!pid) {
+        console.error("Error: PID is null. Cannot proceed with /input request.");
+        return;
+    }
+
     const apiPath = `/program?pid=${pid}`;
-    globalPid = pid;
 
     $.ajax({
         url: apiUrl + apiPath,
@@ -338,7 +344,7 @@ function _pollProgramStatus(pid) {
                 }
 
                 setTimeout(() => {
-                    _pollProgramStatus(pid); // 재귀 호출 (0.4초 딜레이 후)
+                    _pollProgramStatus(null); // 재귀 호출 (0.4초 딜레이 후)
                 }, 400);
 
                 return;
