@@ -200,6 +200,8 @@ function run() {
     var compilerOptions = $compilerOptions.val();
     var commandLineArguments = $commandLineArguments.val();
 
+    localStorageSetItem("last_submit_code", sourceValue);
+
     if (parseInt(languageId) === 44) {
         sourceValue = sourceEditor.getValue();
     }
@@ -514,7 +516,9 @@ function changeEditorLanguage() {
 
 function insertTemplate() {
     currentLanguageId = parseInt($selectLanguage.val());
-    sourceEditor.setValue(sources[currentLanguageId]);
+    sourceEditor.setValue(localStorageGetItem("last_submit_code") ? 
+        localStorageGetItem("last_submit_code") : sources[currentLanguageId]
+    );
     stdinEditor.setValue(inputs[currentLanguageId] || "");
     $compilerOptions.val(compilerOptions[currentLanguageId] || "");
     changeEditorLanguage();
