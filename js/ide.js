@@ -241,8 +241,6 @@ function run() {
 
             success: function (data) {
                 console.log(data);
-
-                globalPid = data.pid;
                 _pollProgramStatus(data.pid);
             },
             error: handleRunError
@@ -314,8 +312,6 @@ function _debug() {
 
             success: function (data) {
                 console.log(data);
-
-                globalPid = data.pid;
                 _pollProgramStatus(data.pid);
             },
             error: handleRunError
@@ -327,6 +323,7 @@ function _debug() {
 
 function _pollProgramStatus(pid) {
     const apiPath = `/program?pid=${pid}`;
+    globalPid = pid;
 
     $.ajax({
         url: apiUrl + apiPath,
