@@ -4,7 +4,11 @@ const AUTH_HEADERS = API_KEY ? {
     "X-RapidAPI-Key": API_KEY
 } : {};
 
-var globalPid = null;
+var _globalProcess = {
+    "pid": null,
+    "apiPath": null,
+};
+
 var defaultUrl = "http://localhost:10010";
 var extraApiUrl = "http://localhost:10010";
 
@@ -132,11 +136,11 @@ function handleRunError(jqXHR, textStatus, errorThrown) {
     $runBtn.removeClass("loading");
     $debugBtn.removeClass("loading");
 
-    if (!globalPid) {
-        _stopProcess(globalPid);
+    if (!_globalProcess.pid) {
+        _stopProcess(null);
     }
 
-    _setGlobalPid(null);
+    _fillGlobalProcess(null, null);
 }
 
 function handleResult(data) {
@@ -242,7 +246,7 @@ function run() {
             success: function (data) {
                 console.log(data);
 
-                _setGlobalPid(data.pid);
+                _fillGlobalProcess(data.pid, apiPath);
                 _pollProgramStatus(data.pid);
             },
             error: handleRunError
@@ -315,7 +319,7 @@ function _debug() {
             success: function (data) {
                 console.log(data);
 
-                _setGlobalPid(data.pid);
+                _fillGlobalProcess(data.pid, "/run/debugger");
                 _pollProgramStatus(data.pid);
             },
             error: handleRunError
@@ -327,7 +331,7 @@ function _debug() {
 
 function _pollProgramStatus(pid) {
     if (pid === null || pid === undefined) {
-        pid = pid || globalPid;
+        pid = pid || _globalProcess.pid;
 
         if (!pid) {
             console.error("Error: PID is null. Cannot proceed with /input request.");
@@ -365,7 +369,7 @@ function _pollProgramStatus(pid) {
 
 function _stopProcess(pid) {
     if (pid === null || pid === undefined) {
-        pid = pid || globalPid;
+        pid = pid || _globalProcess.pid;
 
         if (!pid) {
             console.error("Error: PID is null. Cannot proceed with /input request.");
@@ -389,14 +393,14 @@ function _stopProcess(pid) {
         error: handleRunError
     });
 
-    _setGlobalPid(null);
+    _fillGlobalProcess(null, null);
     $runBtn.removeClass("loading");
     $debugBtn.removeClass("loading");
 }
 
 function _sendInputToProcess(pid) {
     if (pid === null || pid === undefined) {
-        pid = pid || globalPid;
+        pid = pid || _globalProcess.pid;
 
         if (!pid) {
             console.error("Error: PID is null. Cannot proceed with /input request.");
@@ -431,8 +435,18 @@ function _sendInputToProcess(pid) {
     });
 }
 
-function _setGlobalPid(pid) {
-    globalPid = pid;
+function _fillGlobalProcess(pid, apiPath = null) {
+    _globalProcess.pid = pid;
+    _globalProcess.apiPath =apiPath;
+
+    if (_globalProcess.pid === null) {
+        $fixedEnterBtn.prop("disabled", true);
+        return;
+    }
+
+    if (_globalProcess.apiPath === "/run/debugger" || _globalProcess.apiPath === "/run/interactive-mode") {
+        $fixedEnterBtn.prop("disabled", false);
+    }
 }
 
 /**
@@ -588,7 +602,6 @@ $(document).ready(function () {
     });
 
     $statusLine = $("#status-line");
-
     $(document).on("keydown", "body", function (e) {
         var keyCode = e.keyCode || e.which;
         if ((e.metaKey || e.ctrlKey) && keyCode === 13) { // Ctrl + Enter, CMD + Enter
