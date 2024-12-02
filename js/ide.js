@@ -132,6 +132,10 @@ function handleRunError(jqXHR, textStatus, errorThrown) {
     $runBtn.removeClass("loading");
     $debugBtn.removeClass("loading");
 
+    if (!globalPid) {
+        _stopProcess(globalPid);
+    }
+
     globalPid = null;
 }
 
