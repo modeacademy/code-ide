@@ -200,6 +200,8 @@ function run() {
     var compilerOptions = $compilerOptions.val();
     var commandLineArguments = $commandLineArguments.val();
 
+    localStorageSetItem("last_submit_code", sourceValue);
+
     if (parseInt(languageId) === 44) {
         sourceValue = sourceEditor.getValue();
     }
@@ -334,7 +336,6 @@ function _pollProgramStatus(pid) {
         pid = pid || _globalProcess.pid;
 
         if (pid === null || pid === undefined) {
-            debugger;
             console.error("Error: PID is null. Cannot proceed with /input request.");
 
             return;
@@ -352,7 +353,7 @@ function _pollProgramStatus(pid) {
         success: function (data, textStatus, xhr) {
             if (xhr.status === 200) {
                 if (data.output) {
-                    stdoutEditor.setValue(data.output);
+                    stdoutEditor.setValue(stdoutEditor.getValue() + data.output);
                 }
 
                 setTimeout(() => {
@@ -361,10 +362,11 @@ function _pollProgramStatus(pid) {
 
                 return;
             }
-
-            _stopProcess(pid);
+            _fillGlobalProcess(null, null);
+            $runBtn.removeClass("loading");
+            $debugBtn.removeClass("loading");
         },
-
+        
         error: handleRunError
     });
 }
@@ -374,7 +376,6 @@ function _stopProcess(pid) {
         pid = pid || _globalProcess.pid;
 
         if (pid === null || pid === undefined) {
-            debugger;
             console.error("Error: PID is null. Cannot proceed with /input request.");
 
             return;
@@ -407,7 +408,6 @@ function _sendInputToProcess(pid) {
         pid = pid || _globalProcess.pid;
 
         if (pid === null || pid === undefined) {
-            debugger;
             console.error("Error: PID is null. Cannot proceed with /input request.");
 
             return;
@@ -445,7 +445,6 @@ function _fillGlobalProcess(pid, apiPath = null) {
     _globalProcess.pid = pid;
     _globalProcess.apiPath =apiPath;
 
-    debugger;
 
     if (_globalProcess.pid === null) {
         $fixedEnterBtn.prop("disabled", true);
@@ -513,7 +512,9 @@ function changeEditorLanguage() {
 
 function insertTemplate() {
     currentLanguageId = parseInt($selectLanguage.val());
-    sourceEditor.setValue(sources[currentLanguageId]);
+    sourceEditor.setValue(localStorageGetItem("last_submit_code") ? 
+        localStorageGetItem("last_submit_code") : sources[currentLanguageId]
+    );
     stdinEditor.setValue(inputs[currentLanguageId] || "");
     $compilerOptions.val(compilerOptions[currentLanguageId] || "");
     changeEditorLanguage();
@@ -605,7 +606,7 @@ $(document).ready(function () {
 
     $fixedEnterBtn.click(function (e) {
         if ($debugBtn.hasClass("loading") || $runBtn.hasClass("loading")) {
-            _sendInputToProcess(10);
+            _sendInputToProcess(null);
         }
     });
 
