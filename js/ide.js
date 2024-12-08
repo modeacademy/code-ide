@@ -4,13 +4,13 @@ const AUTH_HEADERS = API_KEY ? {
     "X-RapidAPI-Key": API_KEY
 } : {};
 
-var defaultUrl = localStorageGetItem("api-url") || "https://judge0-ce.p.rapidapi.com";
-var extraApiUrl = "https://judge0-extra-ce.p.rapidapi.com";
+var _globalProcess = {
+    "pid": null,
+    "apiPath": null,
+};
 
-if (location.hostname == "ide.judge0.com") {
-    defaultUrl = "https://ce.judge0.com";
-    extraApiUrl = "https://extra-ce.judge0.com";
-}
+var defaultUrl = "http://localhost:10010";
+var extraApiUrl = "http://localhost:10010";
 
 var apiUrl = defaultUrl;
 var wait = ((localStorageGetItem("wait") || "false") === "true");
@@ -36,6 +36,9 @@ var $compilerOptions;
 var $commandLineArguments;
 var $insertTemplateBtn;
 var $runBtn;
+var $debugBtn;
+var $fixedEnterBtn;
+var $interactiveModeCheckBox;
 var $statusLine;
 
 var timeStart;
@@ -101,18 +104,18 @@ function decode(bytes) {
 }
 
 function localStorageSetItem(key, value) {
-  try {
-    localStorage.setItem(key, value);
-  } catch (ignorable) {
-  }
+    try {
+        localStorage.setItem(key, value);
+    } catch (ignorable) {
+    }
 }
 
 function localStorageGetItem(key) {
-  try {
-    return localStorage.getItem(key);
-  } catch (ignorable) {
-    return null;
-  }
+    try {
+        return localStorage.getItem(key);
+    } catch (ignorable) {
+        return null;
+    }
 }
 
 function showError(title, content) {
@@ -126,8 +129,18 @@ function handleError(jqXHR, textStatus, errorThrown) {
 }
 
 function handleRunError(jqXHR, textStatus, errorThrown) {
+    console.log(jqXHR, textStatus, errorThrown);
+
     handleError(jqXHR, textStatus, errorThrown);
+
     $runBtn.removeClass("loading");
+    $debugBtn.removeClass("loading");
+
+    if (!_globalProcess.pid) {
+        _stopProcess(null);
+    }
+
+    _fillGlobalProcess(null, null);
 }
 
 function handleResult(data) {
@@ -144,7 +157,7 @@ function handleResult(data) {
 
     if (blinkStatusLine) {
         $statusLine.addClass("blink");
-        setTimeout(function() {
+        setTimeout(function () {
             blinkStatusLine = false;
             localStorageSetItem("blink", "false");
             $statusLine.removeClass("blink");
@@ -163,6 +176,7 @@ function handleResult(data) {
     }
 
     $runBtn.removeClass("loading");
+    $debugBtn.removeClass("loading");
 }
 
 function run() {
@@ -180,8 +194,87 @@ function run() {
     var x = layout.root.getItemsById("stdout")[0];
     x.parent.header.parent.setActiveContentItem(x);
 
-    var sourceValue = encode(sourceEditor.getValue());
-    var stdinValue = encode(stdinEditor.getValue());
+    var sourceValue = sourceEditor.getValue();
+    var stdinValue = stdinEditor.getValue();
+    var languageId = resolveLanguageId($selectLanguage.val());
+    var compilerOptions = $compilerOptions.val();
+    var commandLineArguments = $commandLineArguments.val();
+
+    localStorageSetItem("last_submit_code", sourceValue);
+
+    if (parseInt(languageId) === 44) {
+        sourceValue = sourceEditor.getValue();
+    }
+
+    var data = {
+        source_code: sourceValue,
+        language_id: languageId,
+        stdin: stdinValue,
+        compiler_options: compilerOptions,
+        command_line_arguments: commandLineArguments,
+        redirect_stderr_to_stdout: true
+    };
+
+    var optionDetails = _getOptionDetailsByValue($selectLanguage.val());
+
+    // 컴파일러 옵션
+    if (data.compiler_options && data.compiler_options.trim() !== "") {
+        optionDetails.compile_option = data.compiler_options;
+    }
+
+    // 커멘드 라인 Arguments
+    if (data.command_line_arguments && data.command_line_arguments.trim() !== "") {
+        optionDetails.argument = data.command_line_arguments;
+    }
+
+    // optionDetails 값을 통해서 쿼리 파라미터 생성
+    var queryParam = Object.entries(optionDetails)
+        .reduce((acc, [key, value]) => `${acc}${key}=${value}&`, '')
+        .slice(0, -1);
+
+    var apiPath = $interactiveModeCheckBox.is(':checked')
+        ? '/run/interactive-mode'
+        : '/run/text-mode';
+
+    var sendRequest = function (data) {
+        timeStart = performance.now();
+        $.ajax({
+            url: apiUrl + apiPath + `?` + queryParam,
+            type: "POST",
+            async: true,
+            contentType: "application/json",
+            data: JSON.stringify(data),
+
+            success: function (data) {
+                console.log(data);
+
+                _fillGlobalProcess(data.pid, apiPath);
+                _pollProgramStatus(data.pid);
+            },
+            error: handleRunError
+        });
+    }
+
+    sendRequest(data);
+}
+
+function _debug() {
+    if (sourceEditor.getValue().trim() === "") {
+        showError("Error", "Source code can't be empty!");
+        return;
+    } else {
+        $debugBtn.addClass("loading");
+    }
+
+    document.getElementById("stdout-dot").hidden = true;
+
+    stdoutEditor.setValue("");
+
+    var x = layout.root.getItemsById("stdout")[0];
+    x.parent.header.parent.setActiveContentItem(x);
+
+    var sourceValue = sourceEditor.getValue();
+    var stdinValue = stdinEditor.getValue();
     var languageId = resolveLanguageId($selectLanguage.val());
     var compilerOptions = $compilerOptions.val();
     var commandLineArguments = $commandLineArguments.val();
@@ -199,52 +292,188 @@ function run() {
         redirect_stderr_to_stdout: true
     };
 
-    var sendRequest = function(data) {
+    var optionDetails = _getOptionDetailsByValue($selectLanguage.val());
+
+    // 컴파일러 옵션
+    if (data.compiler_options && data.compiler_options.trim() !== "") {
+        optionDetails.compile_option = data.compiler_options;
+    }
+
+    // 커멘드 라인 Arguments
+    if (data.command_line_arguments && data.command_line_arguments.trim() !== "") {
+        optionDetails.argument = data.command_line_arguments;
+    }
+
+    // optionDetails 값을 통해서 쿼리 파라미터 생성
+    var queryParam = Object.entries(optionDetails)
+        .reduce((acc, [key, value]) => `${acc}${key}=${value}&`, '')
+        .slice(0, -1);
+
+    var sendRequest = function (data) {
         timeStart = performance.now();
         $.ajax({
-            url: apiUrl + `/submissions?base64_encoded=true&wait=${wait}`,
+            url: apiUrl + `/run/debugger?` + queryParam,
             type: "POST",
             async: true,
             contentType: "application/json",
             data: JSON.stringify(data),
-            headers: AUTH_HEADERS,
-            success: function (data, textStatus, jqXHR) {
-                console.log(`Your submission token is: ${data.token}`);
-                if (wait) {
-                    handleResult(data);
-                } else {
-                    setTimeout(fetchSubmission.bind(null, data.token, 1), INITIAL_WAIT_TIME_MS);
-                }
+
+            success: function (data) {
+                console.log(data);
+
+                _fillGlobalProcess(data.pid, "/run/debugger");
+                _pollProgramStatus(data.pid);
             },
             error: handleRunError
         });
     }
 
-    var fetchAdditionalFiles = false;
-    if (parseInt(languageId) === 82) {
-        if (sqliteAdditionalFiles === "") {
-            fetchAdditionalFiles = true;
-            $.ajax({
-                url: `./data/additional_files_zip_base64.txt`,
-                type: "GET",
-                async: true,
-                contentType: "text/plain",
-                success: function (responseData, textStatus, jqXHR) {
-                    sqliteAdditionalFiles = responseData;
-                    data["additional_files"] = sqliteAdditionalFiles;
-                    sendRequest(data);
-                },
-                error: handleRunError
-            });
-        }
-        else {
-            data["additional_files"] = sqliteAdditionalFiles;
+    sendRequest(data);
+}
+
+function _pollProgramStatus(pid) {
+    if (pid === null || pid === undefined) {
+        pid = pid || _globalProcess.pid;
+
+        if (pid === null || pid === undefined) {
+            console.error("Error: PID is null. Cannot proceed with /input request.");
+
+            return;
         }
     }
 
-    if (!fetchAdditionalFiles) {
-        sendRequest(data);
+    const apiPath = `/program?pid=${pid}`;
+
+    $.ajax({
+        url: apiUrl + apiPath,
+        type: "GET", // GET 요청으로 설정 (데이터를 조회할 때 GET 사용)
+        async: true,
+        contentType: "application/json",
+
+        success: function (data, textStatus, xhr) {
+            if (xhr.status === 200) {
+                if (data.output) {
+                    stdoutEditor.setValue(stdoutEditor.getValue() + data.output);
+                }
+
+                setTimeout(() => {
+                    _pollProgramStatus(null); // 재귀 호출 (0.4초 딜레이 후)
+                }, 400);
+
+                return;
+            }
+            _fillGlobalProcess(null, null);
+            $runBtn.removeClass("loading");
+            $debugBtn.removeClass("loading");
+        },
+        
+        error: handleRunError
+    });
+}
+
+function _stopProcess(pid) {
+    if (pid === null || pid === undefined) {
+        pid = pid || _globalProcess.pid;
+
+        if (pid === null || pid === undefined) {
+            console.error("Error: PID is null. Cannot proceed with /input request.");
+
+            return;
+        }
     }
+
+    const apiPath = `/stop?pid=${pid}`;
+
+    // AJAX 요청 실행
+    $.ajax({
+        url: apiUrl + apiPath,
+        type: "POST",
+        async: true,
+        contentType: "application/json",
+        success: function (data) {
+            console.log(data);
+            console.log("Stop request successful for PID:", pid);
+        },
+
+        error: handleRunError
+    });
+
+    _fillGlobalProcess(null, null);
+    $runBtn.removeClass("loading");
+    $debugBtn.removeClass("loading");
+}
+
+function _sendInputToProcess(pid) {
+    if (pid === null || pid === undefined) {
+        pid = pid || _globalProcess.pid;
+
+        if (pid === null || pid === undefined) {
+            console.error("Error: PID is null. Cannot proceed with /input request.");
+
+            return;
+        }
+    }
+
+    // stdin 값 가져오기
+    const stdinValue = stdinEditor.getValue();
+    const apiPath = `/input?pid=${pid}`;
+
+    console.log({
+        "stdin": stdinValue
+    });
+    stdinEditor.setValue("");
+
+    // AJAX 요청 실행
+    $.ajax({
+        url: apiUrl + apiPath,
+        type: "POST",
+        async: true,
+        contentType: "application/json",
+        data: JSON.stringify({
+            "stdin": stdinValue
+        }),
+        success: function (data) {
+            console.log(data);
+            console.log("Input successfully sent for PID:", pid);
+        },
+
+        error: handleRunError
+    });
+}
+
+function _fillGlobalProcess(pid, apiPath = null) {
+    _globalProcess.pid = pid;
+    _globalProcess.apiPath =apiPath;
+
+
+    if (_globalProcess.pid === null) {
+        $fixedEnterBtn.prop("disabled", true);
+        return;
+    }
+
+    if (_globalProcess.apiPath === "/run/debugger" || _globalProcess.apiPath === "/run/interactive-mode") {
+        $fixedEnterBtn.prop("disabled", false);
+    }
+}
+
+/**
+ * 특정 value에 해당하는 옵션의 language와 compiler_type 정보를 반환하는 함수
+ *
+ * @param value
+ * @returns {{language: *, compiler: *}|null}
+ * @private
+ */
+function _getOptionDetailsByValue(value) {
+    const $option = $(`#select-language option[value='${value}']`);
+
+    if ($option.length > 0) {
+        return {
+            language: $option.data('language'),
+            compiler_type: $option.data('compiler')
+        };
+    }
+
+    return null; // 해당 value에 대한 옵션이 없을 경우
 }
 
 function fetchSubmission(submission_token, iteration) {
@@ -283,7 +512,9 @@ function changeEditorLanguage() {
 
 function insertTemplate() {
     currentLanguageId = parseInt($selectLanguage.val());
-    sourceEditor.setValue(sources[currentLanguageId]);
+    sourceEditor.setValue(localStorageGetItem("last_submit_code") ? 
+        localStorageGetItem("last_submit_code") : sources[currentLanguageId]
+    );
     stdinEditor.setValue(inputs[currentLanguageId] || "");
     $compilerOptions.val(compilerOptions[currentLanguageId] || "");
     changeEditorLanguage();
@@ -318,12 +549,12 @@ function editorsUpdateFontSize(fontSize) {
 
 function updateScreenElements() {
     var display = window.innerWidth <= 1200 ? "none" : "";
-    $(".wide.screen.only").each(function(index) {
+    $(".wide.screen.only").each(function (index) {
         $(this).css("display", display);
     });
 }
 
-$(window).resize(function() {
+$(window).resize(function () {
     layout.updateSize();
     updateScreenElements();
 });
@@ -352,11 +583,34 @@ $(document).ready(function () {
 
     $runBtn = $("#run-btn");
     $runBtn.click(function (e) {
+        if ($(this).hasClass("loading")) {
+            _stopProcess(null);
+            return;
+        }
+
         run();
     });
 
-    $statusLine = $("#status-line");
+    $debugBtn = $("#debug-btn");
+    $debugBtn.click(function (e) {
+        if ($(this).hasClass("loading")) {
+            _stopProcess(null);
+            return;
+        }
 
+        _debug();
+    });
+
+    $fixedEnterBtn = $('#fixed-enter-btn');
+    $interactiveModeCheckBox = $('#interactive-mode');
+
+    $fixedEnterBtn.click(function (e) {
+        if ($debugBtn.hasClass("loading") || $runBtn.hasClass("loading")) {
+            _sendInputToProcess(null);
+        }
+    });
+
+    $statusLine = $("#status-line");
     $(document).on("keydown", "body", function (e) {
         var keyCode = e.keyCode || e.which;
         if ((e.metaKey || e.ctrlKey) && keyCode === 13) { // Ctrl + Enter, CMD + Enter
@@ -444,9 +698,9 @@ $(document).ready(function () {
                 }
             });
 
-            container.on("tab", function(tab) {
+            container.on("tab", function (tab) {
                 tab.element.append("<span id=\"stdout-dot\" class=\"dot\" hidden></span>");
-                tab.element.on("mousedown", function(e) {
+                tab.element.on("mousedown", function (e) {
                     e.target.closest(".lm_tab").children[3].hidden = true;
                 });
             });
@@ -981,7 +1235,7 @@ int main(int argc, char **argv) {\n\
 }\n\
 ";
 
-var csharpTestSource ="\
+var csharpTestSource = "\
 using NUnit.Framework;\n\
 \n\
 public class Calculator\n\
