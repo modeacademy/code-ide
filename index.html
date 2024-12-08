@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous"></script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/golden-layout/1.5.9/goldenlayout.min.js" integrity="sha256-NhJAZDfGgv4PiB+GVlSrPdh3uc75XXYSM4su8hgTchI=" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/golden-layout/1.5.9/css/goldenlayout-base.css" integrity="sha256-oIDR18yKFZtfjCJfDsJYpTBv1S9QmxYopeqw2dO96xM=" crossorigin="anonymous" />
@@ -13,20 +13,27 @@
     <script>
         var require = {
             paths: {
-                "vs": "./vendor/monaco-editor-0.44.0/min/vs"
+                "vs": "./vendor/monaco-editor-0.52.0/min/vs"
+            }
+        };
+
+        // Set up global configuration for the Monaco Environment
+        window.MonacoEnvironment = {
+            getWorkerUrl: function(workerId, label) {
+                // Ensure that the correct worker path is used under /ide
+                return './vendor/monaco-editor-0.52.0/min/vs/base/worker/workerMain.js';
             }
         };
     </script>
-    <script src="./vendor/monaco-editor-0.44.0/min/vs/loader.js"></script>
-    <script src="./vendor/monaco-editor-0.44.0/min/vs/editor/editor.main.nls.js"></script>
-    <script src="./vendor/monaco-editor-0.44.0/min/vs/editor/editor.main.js"></script>
+    <script src="./vendor/monaco-editor-0.52.0/min/vs/loader.js"></script>
+    <script src="./vendor/monaco-editor-0.52.0/min/vs/editor/editor.main.js"></script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css" integrity="sha256-9mbkOfVho3ZPXfM7W8sV2SndrGDuh7wuyLjtsWeTI1Q=" crossorigin="anonymous" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.js" integrity="sha256-t8GepnyPmw9t+foMh3mKNvcorqNHamSKtKRxxpUEgFI=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.5.0/semantic.min.css" integrity="sha512-KXol4x3sVoO+8ZsWPFI/r5KBVB/ssCGB5tsv2nVOKwLg33wTFP3fmnXa47FdSVIshVTgsYk/1734xSk9aFIa4A==" crossorigin="anonymous" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.5.0/semantic.min.js" integrity="sha512-Xo0Jh8MsOn72LGV8kU5LsclG7SUzJsWGhXbWcYs2MAmChkQzwiW/yTQwdJ8w6UA9C6EVG18GHb/TrYpYCjyAQw==" crossorigin="anonymous"></script>
 
     <script type="text/javascript" src="js/ide.js"></script>
     <link type="text/css" rel="stylesheet" href="css/ide.css">
@@ -79,10 +86,79 @@
         <div class="left menu">
             <div class="item borderless">
                 <select id="select-language" class="ui dropdown">
-                    <option data-language="c" data-compiler="clang"  value="75" mode="c">C (Clang)</option>
-                    <option data-language="c" data-compiler="gcc" value="48" mode="c">C (GCC)</option>
-                    <option data-language="cpp" data-compiler="clang" value="76" mode="cpp">C++ (Clang)</option>
-                    <option data-language="cpp" data-compiler="gcc" value="52" mode="cpp">C++ (GCC)</option>
+                    <option value="45" mode="UNKNOWN">Assembly (NASM 2.14.02)</option> <!-- Unknown mode. Help needed. -->
+                    <option value="46" mode="shell">Bash (5.0.0)</option>
+                    <option value="47" mode="UNKNOWN">Basic (FBC 1.07.1)</option> <!-- Unknown mode. Help needed. -->
+                    <option value="1011" mode="UNKNOWN">Bosque (latest)</option>  <!-- Unknown mode. Help needed. -->
+                    <option value="75" mode="c">C (Clang 7.0.1)</option>
+                    <option value="1013" mode="c">C (Clang 9.0.1)</option>
+                    <option value="1001" mode="c">C (Clang 10.0.1)</option>
+                    <option value="104" mode="c">C (Clang 18.1.8)</option>
+                    <option value="48" mode="c">C (GCC 7.4.0)</option>
+                    <option value="49" mode="c">C (GCC 8.3.0)</option>
+                    <option value="50" mode="c">C (GCC 9.2.0)</option>
+                    <option value="103" mode="c">C (GCC 14.1.0)</option>
+                    <option value="51" mode="csharp">C# (Mono 6.6.0.161)</option>
+                    <option value="1022" mode="csharp">C# (Mono 6.10.0.104)</option>
+                    <option value="1021" mode="csharp">C# (.NET Core SDK 3.1.302)</option>
+                    <option value="1023" mode="csharp">C# Test (.NET Core SDK 3.1.302, NUnit 3.12.0)</option>
+                    <option value="76" mode="cpp">C++ (Clang 7.0.1)</option>
+                    <option value="1014" mode="cpp">C++ (Clang 9.0.1)</option>
+                    <option value="1002" mode="cpp">C++ (Clang 10.0.1)</option>
+                    <option value="52" mode="cpp">C++ (GCC 7.4.0)</option>
+                    <option value="53" mode="cpp">C++ (GCC 8.3.0)</option>
+                    <option value="54" mode="cpp">C++ (GCC 9.2.0)</option>
+                    <option value="105" mode="cpp">C++ (GCC 14.1.0)</option>
+                    <option value="1015" mode="cpp">C++ Test (Clang 10.0.1, Google Test 1.8.1)</option>
+                    <option value="1012" mode="cpp">C++ Test (GCC 8.4.0, Google Test 1.8.1)</option>
+                    <option value="1003" mode="c">C3 (latest)</option> <!-- Replacement mode. Help needed. -->
+                    <option value="86" mode="clojure">Clojure (1.10.1)</option>
+                    <option value="77" mode="UNKNOWN">COBOL (GnuCOBOL 2.2)</option> <!-- Unknown mode. Help needed. -->
+                    <option value="55" mode="UNKNOWN">Common Lisp (SBCL 2.0.0)</option> <!-- Unknown mode. Help needed. -->
+                    <option value="56" mode="UNKNOWN">D (DMD 2.089.1)</option> <!-- Unknown mode. Help needed. -->
+                    <option value="57" mode="UNKNOWN">Elixir (1.9.4)</option> <!-- Unknown mode. Help needed. -->
+                    <option value="58" mode="UNKNOWN">Erlang (OTP 22.2)</option> <!-- Unknown mode. Help needed. -->
+                    <option value="44" mode="plaintext">Executable</option>
+                    <option value="87" mode="fsharp">F# (.NET Core SDK 3.1.202)</option>
+                    <option value="1024" mode="fsharp">F# (.NET Core SDK 3.1.302)</option>
+                    <option value="59" mode="UNKNOWN">Fortran (GFortran 9.2.0)</option> <!-- Unknown mode. Help needed. -->
+                    <option value="60" mode="go">Go (1.13.5)</option>
+                    <option value="88" mode="UNKNOWN">Groovy (3.0.3)</option> <!-- Unknown mode. Help needed. -->
+                    <option value="61" mode="UNKNOWN">Haskell (GHC 8.8.1)</option> <!-- Unknown mode. Help needed. -->
+                    <option value="62" mode="java">Java (OpenJDK 13.0.1)</option>
+                    <option value="1004" mode="java">Java (OpenJDK 14.0.1)</option>
+                    <option value="1005" mode="java">Java Test (OpenJDK 14.0.1, JUnit Platform Console Standalone 1.6.2)</option>
+                    <option value="63" mode="javascript">JavaScript (Node.js 12.14.0)</option>
+                    <option value="102" mode="javascript">JavaScript (Node.js 22.08.0)</option>
+                    <option value="78" mode="kotlin">Kotlin (1.3.70)</option>
+                    <option value="64" mode="lua">Lua (5.3.5)</option>
+                    <option value="1006" mode="c">MPI (OpenRTE 3.1.3) with C (GCC 8.3.0)</option>
+                    <option value="1007" mode="cpp">MPI (OpenRTE 3.1.3) with C++ (GCC 8.3.0)</option>
+                    <option value="1008" mode="python">MPI (OpenRTE 3.1.3) with Python (3.7.3)</option>
+                    <option value="1009" mode="python">Nim (stable)</option> <!-- Replacement mode. Help needed. -->
+                    <option value="79" mode="objective-c">Objective-C (Clang 7.0.1)</option>
+                    <option value="65" mode="UNKNOWN">OCaml (4.09.0)</option> <!-- Unknown mode. Help needed. -->
+                    <option value="66" mode="UNKNOWN">Octave (5.1.0)</option> <!-- Unknown mode. Help needed. -->
+                    <option value="67" mode="pascal">Pascal (FPC 3.0.4)</option>
+                    <option value="85" mode="perl">Perl (5.28.1)</option>
+                    <option value="98" mode="php">PHP (8.3.11)</option>
+                    <option value="68" mode="php">PHP (7.4.1)</option>
+                    <option value="43" mode="plaintext">Plain Text</option>
+                    <option value="69" mode="UNKNOWN">Prolog (GNU Prolog 1.4.5)</option> <!-- Unknown mode. Help needed. -->
+                    <option value="70" mode="python">Python (2.7.17)</option>
+                    <option value="71" mode="python">Python (3.8.1)</option>
+                    <option value="100" mode="python">Python (3.12.5)</option>
+                    <option value="1010" mode="python">Python for ML (3.7.3)</option>
+                    <option value="80" mode="r">R (4.0.0)</option>
+                    <option value="99" mode="r">R (4.4.1)</option>
+                    <option value="72" mode="ruby">Ruby (2.7.0)</option>
+                    <option value="73" mode="rust">Rust (1.40.0)</option>
+                    <option value="81" mode="UNKNOWN">Scala (2.13.2)</option> <!-- Unknown mode. Help needed. -->
+                    <option value="82" mode="sql">SQL (SQLite 3.27.2)</option>
+                    <option value="83" mode="swift">Swift (5.2.3)</option>
+                    <option value="74" mode="typescript">TypeScript (3.7.4)</option>
+                    <option value="101" mode="typescript">TypeScript (5.6.2)</option>
+                    <option value="84" mode="vb">Visual Basic.Net (vbnc 0.0.0.5943)</option> <!-- (vbnc 0.0.0.5943) -->
                 </select>
             </div>
             <div class="item fitted borderless wide screen only">

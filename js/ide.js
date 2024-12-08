@@ -1,15 +1,17 @@
 const API_KEY = ""; // Get yours for free at https://rapidapi.com/organization/judge0
 
-const AUTH_HEADERS = API_KEY ? {
-    "X-RapidAPI-Key": API_KEY
-} : {};
+// const AUTH_HEADERS = API_KEY ? {
+//     "X-RapidAPI-Key": API_KEY
+// } : {};
+
+const AUTH_HEADERS = {};
 
 var _globalProcess = {
     "pid": null,
     "apiPath": null,
 };
 
-var defaultUrl = "http://localhost:10010";
+var defaultUrl = "http://localhost:10010" || "http://localhost:8085/api"; // example for local server
 var extraApiUrl = "http://localhost:10010";
 
 var apiUrl = defaultUrl;
